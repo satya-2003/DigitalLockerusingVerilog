@@ -1,0 +1,292 @@
+A. Verilog Code
+This is the sample code for locked phase.
+A.1 Code 1
+module lock(
+    input clock,
+    input reset,
+    input [3:0]x,
+    output reg lock,
+    output reg error
+); 
+reg [2:0] ps;
+reg [2:0] ns;
+parameter enter=3'b000,
+          got1=3'b001,
+          got2=3'b010,
+          got3=3'b011,
+          locked=3'b100,
+          wrong=3'b101; 
+		
+		 always @ (*)
+		 begin
+    case(ps)
+enter : if(x==4'b0100) 
+	         ns<=got1; 
+            else
+	         ns<=enter;
+      got1: if(x==4'b0010) 
+                   ns<= got2; 
+            else 	14
+                   ns<=wrong;	
+      got2: if(x==4'b0011) 
+                   ns<=got3; 
+            else 
+                   ns<=wrong;
+       got3: if(x==4'b0001) 
+                    ns<= locked; 
+             else
+                    ns<=wrong;
+   locked: if(x==1'b0) 
+                   ns<=enter; 
+             else 
+                    ns<=locked;
+      wrong: if(x==1'b0) 
+                  ns<= enter; 
+             else 
+                  ns<=wrong;
+	 default: ns<=enter;
+	endcase
+  end
+always@ (posedge clock, posedge reset)
+  begin
+     if(reset==0)
+ps<=enter;
+     else
+ps<=ns;
+  end
+always@(ps,x)
+       begin
+       case(ps)
+       enter: begin
+             lock=1'b0;
+		 if(x==4'b0100)
+		       error=1'b0;	15
+		else
+		      error=1'b1;
+		 end
+	    got1: begin
+		      lock=1'b0;
+		      if(x==4'b0010)
+			error=1'b0;
+		     else
+			error=1'b1;
+		   end
+		 got2: begin
+		      lock=1'b0;
+		      if(x==4'b0011)
+			error=1'b0;
+		      else
+			error=1'b1;
+		       end
+		 got3: begin
+		      lock=1'b0;
+		      if(x==4'b0001)
+			error=1'b0;
+		      else
+			error=1'b1;
+		      end
+		 locked: begin
+		          lock=1'b1;
+		          error=1'b0;
+			 end
+		 wrong: begin
+		       lock=1'b0;
+                           if(x)
+                              error=1'b1;
+                          else 
+                              error=1'b0;	16
+	               end
+      default: begin
+		        lock=1'b0;
+              error=1'b0;
+	  end
+endcase
+end
+endmodule
+
+A.2. Testbench for code 1
+
+module testbench;
+
+	// Inputs
+	reg clock;
+	reg reset;
+	reg [3:0]x;
+
+	// Outputs
+	wire lock;
+	wire error;
+
+	// Instantiate the Unit Under Test (UUT)
+	lock uut (
+		.clock(clock), 
+		.reset(reset), 
+		.x(x), 
+		.lock(lock), 
+		.error(error)
+	);
+
+	initial begin
+		clock=0;	17
+		forever#5 clock=~clock;
+		end
+		initial begin
+	reset=0;
+		x=4'b0000;
+		#1 reset=0;
+		#9 reset=1;
+		#30
+		x=4'b0100;
+		#10 x=4'b0010;
+		#10 x=4'b0011;
+		#10 x=4'b0001;
+		end
+endmodule
+
+B. Verilog Code
+This is the sample code for unlocked phase.
+B.1 Code 2
+module unlock(
+    input clock,
+    input reset,
+    input [3:0]x,
+    output reg unlock,
+    output reg error
+); 
+reg [2:0] ps;
+reg [2:0] ns;
+parameter enter=3'b000,
+          got1=3'b001,
+          got2=3'b010,
+          got3=3'b011,
+         unlocked=3'b100,
+          wrong=3'b101; 	18
+		
+		 always @ (*)
+		 begin
+    case(ps)
+enter : if(x==4'b0100) 
+	         ns<=got1; 
+            else
+	         ns<=enter;
+      got1: if(x==4'b0010) 
+                   ns<= got2; 
+            else 
+                   ns<=wrong;	
+      got2: if(x==4'b0011) 
+                   ns<=got3; 
+            else 
+                   ns<=wrong;
+       got3: if(x==4'b0001) 
+                    ns<=unlocked; 
+             else
+                    ns<=wrong;
+   unlocked: if(x==1'b0) 
+                   ns<=enter; 
+             else 
+                    ns<=unlocked;
+      wrong: if(x==1'b0) 
+                  ns<= enter; 
+             else 
+                  ns<=wrong;
+	 default: ns<=enter;
+	endcase
+  end
+always@ (posedge clock, posedge reset)
+  begin
+     if(reset==0)	19
+ps<=enter;
+     else
+ps<=ns;
+  end
+always@(ps,x)
+       begin
+       case(ps)
+       enter: begin
+             unlock=1'b0;
+		 if(x==4'b0100)
+		       error=1'b0;
+		else
+		      error=1'b1;
+		 end
+	    got1: begin
+		     unlock=1'b0;
+		      if(x==4'b0010)
+			error=1'b0;
+		     else
+			error=1'b1;
+		   end
+		 got2: begin
+		     unlock=1'b0;
+		      if(x==4'b0011)
+			error=1'b0;
+		      else
+			error=1'b1;
+		       end
+		 got3: begin
+		      unlock=1'b0;
+		      if(x==4'b0001)
+			error=1'b0;
+		      else
+			error=1'b1;                        20
+		      end
+		 unlocked: begin
+		          unlock=1'b1;
+		          error=1'b0;
+			 end
+		 wrong: begin
+		       unlock=1'b0;
+                           if(x)
+                              error=1'b1;
+                          else 
+                              error=1'b0;
+	               end
+      default: begin
+              unlock=1'b0;
+              error=1'b0;
+	  end
+endcase
+end
+endmodule
+
+B.2. Testbench for code 2
+
+module testbench;
+
+	// Inputs
+	reg clock;
+	reg reset;
+	reg [3:0]x;
+
+	// Outputs
+	wire unlock;
+            wire error;                                              
+                                                                             21
+
+	// Instantiate the Unit Under Test (UUT)
+	unlock uut (
+		.clock(clock), 
+		.reset(reset), 
+		.x(x), 
+		.unlock(unlock), 
+		.error(error)
+	);
+
+	initial begin
+		clock=0;
+		forever#5 clock=~clock;
+		end
+		initial begin
+	reset=0;
+		x=4'b0000;
+		#1 reset=0;
+		#9 reset=1;
+		#30
+		x=4'b0100;
+		#10 x=4'b0010;
+		#10 x=4'b0011;
+		#10 x=4'b0001;
+		end
+endmodule
+
+
